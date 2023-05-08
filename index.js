@@ -17,33 +17,39 @@
 //     =====`-.____`.___ \_____/___.-`___.-'=====
 //                       `=---='
 //     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-const server = require('./src/app.js');
-const { conn, Country } = require('./src/db.js');
-const getAllCountriesAPI = require('./src/helpers/getAllCountriesAPI.js');
+const server = require("./src/app.js");
+const { conn, Country } = require("./src/db.js");
+const getAllCountriesAPI = require("./src/helpers/getAllCountriesAPI.js");
 const { PORT } = process.env;
 const activities = require("./src/data/activities");
-const { createActivity } = require("./src/helpers")
+const { createActivity } = require("./src/helpers");
 // Syncing all the models at once.
-conn.sync({ force: true })
+conn
+  .sync({ force: true })
   .then(async () => {
-
     try {
       // AÑADO LOS PAISES
-      let response = await getAllCountriesAPI();
+      const response = await getAllCountriesAPI();
 
       if (response.error) {
         throw new Error(response.error);
       } else {
-        let countriesMaped = response.countries.map((country) => {
+        const countriesMaped = response.countries.map((country) => {
           return {
             id: country.cca3.toUpperCase(),
             nombre: country.name.common,
-            imagen_bandera: country.flags ? country.flags[1] : 'https://www.barcelonabeta.org/sites/default/files/2018-04/default-image_0.png',
-            continente: country.continents ? country.continents[0] : "Desconocido",
-            capital: country.capital ? country.capital.toString() : "Desconocida",
+            imagen_bandera: country.flags
+              ? country.flags[1]
+              : "https://www.barcelonabeta.org/sites/default/files/2018-04/default-image_0.png",
+            continente: country.continents
+              ? country.continents[0]
+              : "Desconocido",
+            capital: country.capital
+              ? country.capital.toString()
+              : "Desconocida",
             subregion: country.subregion,
             area: country.area,
-            poblacion: country.population
+            poblacion: country.population,
           };
         });
 
@@ -52,20 +58,19 @@ conn.sync({ force: true })
       }
 
       // AÑADO LAS ACTIVIDADES
-      activities.map(activity => createActivity(activity));
-
+      activities.map((activity) => createActivity(activity));
     } catch (err) {
       console.log(err);
-      console.log('No ha sido posible inicializar la BD')
+      console.log("No ha sido posible inicializar la BD");
     } finally {
       server.listen(PORT, () => {
         console.log(`Listening at port ${PORT}`); // eslint-disable-line no-console
-      })
+      });
     }
   })
   .catch((err) => {
     console.log(err.message);
-    console.log(`No se ha podido conectar a la BBDD`);
+    console.log("No se ha podido conectar a la BBDD");
   });
 
 // ID (Código de 3 letras) => cca3

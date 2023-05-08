@@ -1,10 +1,8 @@
-require('dotenv').config();
-const { Sequelize, DataTypes } = require('sequelize');
-const fs = require('fs');
-const path = require('path');
-const {
-  DATABASE_URL
-} = process.env;
+require("dotenv").config();
+const { Sequelize, DataTypes } = require("sequelize");
+const fs = require("fs");
+const path = require("path");
+const { DATABASE_URL } = process.env;
 
 const sequelize = new Sequelize(DATABASE_URL, {
   logging: false,
@@ -13,8 +11,8 @@ const sequelize = new Sequelize(DATABASE_URL, {
   dialectOptions: {
     ssl: {
       require: true,
-      rejectUnauthorized: false
-    }
+      rejectUnauthorized: false,
+    },
   },
 });
 const basename = path.basename(__filename);
@@ -22,22 +20,28 @@ const basename = path.basename(__filename);
 const modelDefiners = [];
 
 // Leemos todos los archivos de la carpeta Models, los requerimos y agregamos al arreglo modelDefiners
-fs.readdirSync(path.join(__dirname, '/models'))
-  .filter((file) => (file.indexOf('.') !== 0) && (file !== basename) && (file.slice(-3) === '.js'))
+fs.readdirSync(path.join(__dirname, "/models"))
+  .filter(
+    (file) =>
+      file.indexOf(".") !== 0 && file !== basename && file.slice(-3) === ".js"
+  )
   .forEach((file) => {
-    modelDefiners.push(require(path.join(__dirname, '/models', file)));
+    modelDefiners.push(require(path.join(__dirname, "/models", file)));
   });
 
 // Injectamos la conexion (sequelize) a todos los modelos
-modelDefiners.forEach(model => model(sequelize, DataTypes));
+modelDefiners.forEach((model) => model(sequelize, DataTypes));
 
 // Capitalizamos los nombres de los modelos ie: product => Product
-let entries = Object.entries(sequelize.models);
-let capsEntries = entries.map((entry) => [entry[0][0].toUpperCase() + entry[0].slice(1), entry[1]]);
+const entries = Object.entries(sequelize.models);
+const capsEntries = entries.map((entry) => [
+  entry[0][0].toUpperCase() + entry[0].slice(1),
+  entry[1],
+]);
 
 // para realizar las asociaciones
-let models = Object.fromEntries(capsEntries);
-Object.keys(models).forEach(modelName => {
+const models = Object.fromEntries(capsEntries);
+Object.keys(models).forEach((modelName) => {
   if (models[modelName].associate) {
     models[modelName].associate(models);
   }
@@ -55,5 +59,5 @@ sequelize.models = models;
 
 module.exports = {
   ...sequelize.models, // para poder importar los modelos así: const { Product, User } = require('./db.js');
-  conn: sequelize,     // para importar la conexión { conn } = require('./db.js');
+  conn: sequelize, // para importar la conexión { conn } = require('./db.js');
 };
